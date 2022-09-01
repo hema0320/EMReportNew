@@ -938,6 +938,60 @@ function SendGlobalReport {
     }
 }
 
+function UpdateReportToTeams() {
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()] 
+        [Alias("ReportObjects")] 
+        [Object]$reportObjs, 
+
+        [Parameter(Mandatory = $false)]
+        [bool]$isTesting = $false
+    )
+
+    if (($reportObjs -is [System.Array]) -and ($reportObjs.Count -eq 3)) {
+
+        $taskId = "BvCuJ4o0tEu9TvODJHEfe2UAIOCE"
+        $detailUrl = "https://graph.microsoft.com/v1.0/planner/tasks/$taskid/details"
+
+        $emReport = ("EM APAC Report on {0}`n{1}`n`nGlobal EM Report on {2}`n{3}`n{4}`n{5}" -f
+            $TodayDate,
+            $reportObjs[1].reportSummary,
+            $TodayDate,
+            $reportObjs[0].reportTotal, 
+            $reportObjs[1].reportTotal, 
+            $reportObjs[2].reportTotal)
+
+        if ($isTesting -ne $true) {
+            $taskId = "BvCuJ4o0tEu9TvODJHEfe2UAIOCE"
+        }
+
+        Connect-MgGraph -Scopes "User.Read.All", "Group.ReadWrite.All"
+
+        $result = Invoke-MgGraphRequest -Method GET $detailUrl
+
+        if ($result -ne 0) {
+            $headers = @{}
+            $headers.Add("If-Match", $result["@odata.etag"])
+        
+            $newConetent = @{
+                description = $emReport
+            }
+        
+            $contentJson = $newConetent | ConvertTo-Json
+            Invoke-MgGraphRequest -Headers  $headers -Uri $detailUrl -Method 'PATCH' -ContentType 'application/json' -Body $contentJson
+            $result = $null
+        }
+
+        Disconnect-MgGraph
+    }
+    else {
+        Write-Host ("Error when update report to teams tasks !!!, detail: {0}" -f $error[0])
+        Write-ToLogFile -LogContent ("Error when update report to teams tasks !!!, detail: {0}" -f $error[0])
+    }
+}
+
 $stopWatch = [System.Diagnostics.Stopwatch]::StartNew();
 
 if (Get-Module -ListAvailable -Name ImportExcel) {
@@ -947,9 +1001,18 @@ else {
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force
     Install-Module -Name ImportExcel -Scope CurrentUser -Force
 }
+
+if (Get-Module -ListAvailable -Name Microsoft.Graph) {
+    #Write-Host "Module exists"
+}
+else {
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force
+    Install-Module -Name Microsoft.Graph -MinimumVersion 1.1.0 -Scope CurrentUser -Force
+}
 #try {Import-Module $PSScriptRoot\..\ImportExcel} catch {throw ; return}
 
 Import-Module ImportExcel
+Import-Module Microsoft.Graph.Planner
 
 $GetDate = Get-Date; # get current date.
 $TodayDate = $GetDate.ToString("yyyyMMdd");
@@ -1025,13 +1088,14 @@ if (Test-Path -Path $XlsxFileName) {
     #SendRegionsReport -report_Obj $emea_ReportObj
     SendRegionsReport -report_Obj $apac_ReportObj
 
+    UpdateReportToTeams -reportObjs @($amer_ReportObj, $apac_ReportObj, $emea_ReportObj) -isTesting $OnTestingStatus
+
     DoFileArchive -ArchiveFolder $ArchiveFolderName -FileLists $ExportFiles
 }
 else {
     Write-Host "Source file(data.xlsx) not exist !!!!";
     Write-ToLogFile -LogContent ("Source data(data.xlsx) not exist !!!!")
 }
-
 
 $stopWatch.Stop();
 Write-Host -ForegroundColor yellow ('Total Runnning time: ' + $stopWatch.Elapsed.TotalMinutes + ' minutes');
