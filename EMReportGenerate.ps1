@@ -845,7 +845,7 @@ function GenerateReportAPAC {
     $report_Object | Add-Member -NotePropertyName 'patchProbDevices' -NotePropertyValue $apac_patchProbDevices
     $report_Object | Add-Member -NotePropertyName 'mgntByProbDevices' -NotePropertyValue $apac_mgntByProbDevices
     $report_Object | Add-Member -NotePropertyName 'adProbDevices' -NotePropertyValue $apac_adProbDevices
-    $report_Object | Add-Member -NotePropertyName 'reportSummary' -NotePropertyValue ("$cn_hk_Report `r`n$kr_jp_tw_Report`r`n$my_sg_vn_Report`r`n$ptc_Report`r`n$asub_Report`r`n$apac_Report")
+    $report_Object | Add-Member -NotePropertyName 'reportSummary' -NotePropertyValue ("$cn_hk_Report `r`n$kr_jp_tw_Report`r`n$my_sg_vn_Report`r`n$ptc_Report`r`n$asub_Report`r`n`r`n$apac_Report")
     $report_Object | Add-Member -NotePropertyName 'reportTotal' -NotePropertyValue $apac_Total_Report
     $report_Object | Add-Member -NotePropertyName 'fullHtmlReport' -NotePropertyValue $fullHtmlReport
     $report_Object | Add-Member -NotePropertyName 'simpleHtmlReport' -NotePropertyValue $simpleHtmlReport
@@ -953,35 +953,40 @@ function UpdateReportToTeams() {
     if (($reportObjs -is [System.Array]) -and ($reportObjs.Count -eq 3)) {
 
         $taskId = "BvCuJ4o0tEu9TvODJHEfe2UAIOCE"
+        $titleUrl = "https://graph.microsoft.com/v1.0/planner/tasks/$taskid"
         $detailUrl = "https://graph.microsoft.com/v1.0/planner/tasks/$taskid/details"
 
-        $emReport = ("EM APAC Report on {0}`n{1}`n`nGlobal EM Report on {2}`n{3}`n{4}`n{5}" -f
-            $TodayDate,
-            $reportObjs[1].reportSummary,
-            $TodayDate,
-            $reportObjs[0].reportTotal, 
-            $reportObjs[1].reportTotal, 
-            $reportObjs[2].reportTotal)
+        $emReport = ("EM APAC Report on {0}`r`n{1}`r`n`r`nGlobal EM Report on {2}`r`n{3}`r`n{4}`r`n{5}" -f `
+                $TodayDate, `
+                $reportObjs[1].reportSummary, `
+                $TodayDate, `
+                $reportObjs[0].reportTotal, `
+                $reportObjs[1].reportTotal, `
+                $reportObjs[2].reportTotal)
 
         if ($isTesting -ne $true) {
-            $taskId = "BvCuJ4o0tEu9TvODJHEfe2UAIOCE"
+            $taskId = "REIRV9MKLk2JZoitlaWwDWUAJ_6s"
         }
 
         Connect-MgGraph -Scopes "User.Read.All", "Group.ReadWrite.All"
 
-        $result = Invoke-MgGraphRequest -Method GET $detailUrl
+        $result = Invoke-MgGraphRequest -Method GET $titleUrl
+        if (($result -ne 0) -and (($result.title.toString()).ToLower().StartsWith("vulnerable machines"))) {
 
-        if ($result -ne 0) {
-            $headers = @{}
-            $headers.Add("If-Match", $result["@odata.etag"])
+            $result = Invoke-MgGraphRequest -Method GET $detailUrl
+
+            if ($result -ne 0) {
+                $headers = @{}
+                $headers.Add("If-Match", $result["@odata.etag"])
         
-            $newConetent = @{
-                description = $emReport
+                $newConetent = @{
+                    description = $emReport
+                }
+        
+                $contentJson = $newConetent | ConvertTo-Json
+                Invoke-MgGraphRequest -Headers  $headers -Uri $detailUrl -Method 'PATCH' -ContentType 'application/json' -Body $contentJson
+                $result = $null
             }
-        
-            $contentJson = $newConetent | ConvertTo-Json
-            Invoke-MgGraphRequest -Headers  $headers -Uri $detailUrl -Method 'PATCH' -ContentType 'application/json' -Body $contentJson
-            $result = $null
         }
 
         Disconnect-MgGraph
