@@ -976,6 +976,9 @@ function UpdateReportToTeams() {
             $result = Invoke-MgGraphRequest -Method GET $detailUrl
 
             if ($result -ne 0) {
+                Write-Host ("Sending report to Teams ...")
+                Write-ToLogFile -LogContent ("Sending report to Teams ...")
+                
                 $headers = @{}
                 $headers.Add("If-Match", $result["@odata.etag"])
         
@@ -986,6 +989,9 @@ function UpdateReportToTeams() {
                 $contentJson = $newConetent | ConvertTo-Json
                 Invoke-MgGraphRequest -Headers  $headers -Uri $detailUrl -Method 'PATCH' -ContentType 'application/json' -Body $contentJson
                 $result = $null
+
+                Write-Host ("Tasks ID: $taskId")
+                Write-ToLogFile -LogContent ("Tasks ID: $taskId")
             }
         }
 
