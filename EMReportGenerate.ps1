@@ -952,10 +952,6 @@ function UpdateReportToTeams() {
 
     if (($reportObjs -is [System.Array]) -and ($reportObjs.Count -eq 3)) {
 
-        $taskId = "BvCuJ4o0tEu9TvODJHEfe2UAIOCE"
-        $titleUrl = "https://graph.microsoft.com/v1.0/planner/tasks/$taskid"
-        $detailUrl = "https://graph.microsoft.com/v1.0/planner/tasks/$taskid/details"
-
         $emReport = ("EM APAC Report on {0}`r`n{1}`r`n`r`nGlobal EM Report on {2}`r`n{3}`r`n{4}`r`n{5}" -f `
                 $TodayDate, `
                 $reportObjs[1].reportSummary, `
@@ -964,9 +960,14 @@ function UpdateReportToTeams() {
                 $reportObjs[1].reportTotal, `
                 $reportObjs[2].reportTotal)
 
+        $taskId = "BvCuJ4o0tEu9TvODJHEfe2UAIOCE"
+
         if ($isTesting -ne $true) {
             $taskId = "REIRV9MKLk2JZoitlaWwDWUAJ_6s"
         }
+
+        $titleUrl = "https://graph.microsoft.com/v1.0/planner/tasks/$taskid"
+        $detailUrl = "https://graph.microsoft.com/v1.0/planner/tasks/$taskid/details"
 
         Connect-MgGraph -Scopes "User.Read.All", "Group.ReadWrite.All"
 
@@ -1094,10 +1095,10 @@ if (Test-Path -Path $XlsxFileName) {
     $emea_ReportObj = GenerateReportEMEA -sourceData $sourceData -exportFileName $ExportFiles[1] -isTesting $OnTestingStatus
     $apac_ReportObj = GenerateReportAPAC -sourceData $sourceData -exportFileName $ExportFiles[2] -isTesting $OnTestingStatus
 
-    SendGlobalReport -reportObjs @($amer_ReportObj, $apac_ReportObj, $emea_ReportObj) -isTesting $OnTestingStatus
+    #SendGlobalReport -reportObjs @($amer_ReportObj, $apac_ReportObj, $emea_ReportObj) -isTesting $OnTestingStatus
     #SendRegionsReport -report_Obj $amer_ReportObj
     #SendRegionsReport -report_Obj $emea_ReportObj
-    SendRegionsReport -report_Obj $apac_ReportObj
+    #SendRegionsReport -report_Obj $apac_ReportObj
 
     UpdateReportToTeams -reportObjs @($amer_ReportObj, $apac_ReportObj, $emea_ReportObj) -isTesting $OnTestingStatus
 
