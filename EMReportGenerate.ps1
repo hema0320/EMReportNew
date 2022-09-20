@@ -147,12 +147,13 @@ function GenerateReportAMER {
     ### Problem devices in America
     #######################################################
     #$amer_probDevices = $amer_Devices | where {$_.ProblemDevice -eq $true}
-    [array]$amer_probDevices = $amer_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) }
-    [array]$amer_cbProbDevices = $amer_probDevices | Where-Object { $_.ProblemCarbonBlack -eq $true }
-    [array]$amer_sepProbDevices = $amer_probDevices | Where-Object { $_.ProblemAntivirus -eq $true }
-    [array]$amer_patchProbDevices = $amer_probDevices | Where-Object { $_.ProblemPatching -eq $true }
-    [array]$amer_mgntByProbDevices = $amer_probDevices | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
-    [array]$amer_adProbDevices = $amer_probDevices | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
+    [array]$amer_probDevices = $amer_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
+    [array]$amer_cbProbDevices = $amer_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
+    [array]$amer_cbcProbDevices = $amer_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
+    [array]$amer_sepProbDevices = $amer_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    [array]$amer_patchProbDevices = $amer_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
+    [array]$amer_mgntByProbDevices = $amer_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
+    [array]$amer_adProbDevices = $amer_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
 
     #$amer_StateAntivirusDevices = $amer_sepProbDevices | Where-Object { "non-corp av".Equals($_.StateAntivirus.Trim().ToLower()) -or "not applicable".Equals($_.StateAntivirus.Trim().ToLower()) }
     #$amer_StatePatchDevices = $amer_patchProbDevices | Where-Object { "agent not found".Equals($_.StatePatching.Trim().ToLower()) -or "needs os version".Equals($_.StatePatching.Trim().ToLower()) -or "not applicable".Equals($_.StatePatching.Trim().ToLower()) }
@@ -173,12 +174,27 @@ function GenerateReportAMER {
     ##############################################################
     ### Create EPM report file with all America problem Devices
     ##############################################################
-    $epmExcel = $amer_adProbDevices | Export-Excel -Path $exportFileName -WorksheetName "AD" -ClearSheet -AutoSize -AutoFilter -FreezePane @(2, 2)
-    $epmExcel = $amer_cbProbDevices | Export-Excel -Path $exportFileName -WorksheetName "CB" -AutoSize -AutoFilter -FreezePane @(2, 2)
-    $epmExcel = $amer_sepProbDevices | Export-Excel -Path $exportFileName -WorksheetName "SEP" -AutoSize -AutoFilter -FreezePane @(2, 2)
-    $epmExcel = $amer_patchProbDevices | Export-Excel -Path $exportFileName -WorksheetName "Patch" -AutoSize -AutoFilter -FreezePane @(2, 2)
-    $epmExcel = $amer_mgntByProbDevices | Export-Excel -Path $exportFileName -WorksheetName "MgmtBy" -AutoSize -AutoFilter -FreezePane @(2, 2)
-    $epmExcel = $amer_probDevices | Export-Excel -Path $exportFileName -WorksheetName ($getDate.ToString("yyyyMMdd").ToString()) -AutoSize -AutoFilter -FreezePane @(2, 2) -PassThru
+    if ($null -ne $amer_adProbDevices -and $amer_adProbDevices.Count -ge 0) {
+        $epmExcel = $amer_adProbDevices | Export-Excel -Path $exportFileName -WorksheetName "AD" -ClearSheet -AutoSize -AutoFilter -FreezePane @(2, 2)
+    }
+    if ($null -ne $amer_cbProbDevices -and $amer_cbProbDevices.Count -ge 0) {
+        $epmExcel = $amer_cbProbDevices | Export-Excel -Path $exportFileName -WorksheetName "CB" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    }
+    if ($null -ne $amer_cbcProbDevices -and $amer_cbcProbDevices.Count -ge 0) {
+        $epmExcel = $amer_cbcProbDevices | Export-Excel -Path $exportFileName -WorksheetName "CBC" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    }
+    #if ($null -ne $amer_sepProbDevices -and $amer_sepProbDevices.Count -ge 0) {
+    #    $epmExcel = $amer_sepProbDevices | Export-Excel -Path $exportFileName -WorksheetName "SEP" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    #}
+    if ($null -ne $amer_patchProbDevices -and $amer_patchProbDevices.Count -ge 0) {
+        $epmExcel = $amer_patchProbDevices | Export-Excel -Path $exportFileName -WorksheetName "Patch" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    }
+    if ($null -ne $amer_mgntByProbDevices -and $amer_mgntByProbDevices.Count -ge 0) {
+        $epmExcel = $amer_mgntByProbDevices | Export-Excel -Path $exportFileName -WorksheetName "MgmtBy" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    }
+    if ($null -ne $amer_probDevices -and $amer_probDevices.Count -ge 0) {
+        $epmExcel = $amer_probDevices | Export-Excel -Path $exportFileName -WorksheetName ($getDate.ToString("yyyyMMdd").ToString()) -AutoSize -AutoFilter -FreezePane @(2, 2) -PassThru
+    }
     $epmExcel.Save();
     $epmExcel.Dispose();
     #$epmExcel.Workbook.Worksheets["SEP"].Cells.Item(1, 10, $epmExcel.Workbook.Worksheets["SEP"].AutoFilterAddress.Rows, 10) | where{ $_.Value.Trim().Equals("Restart Required")} | select {($_.Address).Replace('J','')}
@@ -187,12 +203,12 @@ function GenerateReportAMER {
     Write-Host "Generate Email report(AMER) ..."
     Write-ToLogFile -LogContent ("Generate Email report(AMER) ...")
 
-    $amer_Report = "AMER - Total: {0}, CB: {1}, SEP: {2}, Patching: {3}, AD: {4}" -f `
+    $amer_Report = "AMER - Total: {0}, AD: {1}, CB: {2}, CBC: {3}, Patching: {4}" -f `
     (Get-ObjNumber $amer_probDevices ), `
+    (Get-ObjNumber $amer_adProbDevices ), `
     (Get-ObjNumber $amer_cbProbDevices ), `
-    (Get-ObjNumber $amer_sepProbDevices ), `
-    (Get-ObjNumber $amer_patchProbDevices ), `
-    (Get-ObjNumber $amer_adProbDevices );
+    (Get-ObjNumber $amer_cbcProbDevices ), `
+    (Get-ObjNumber $amer_patchProbDevices );
 
     $epmReport = "<H2>EM AMER Report on $TodayDate</H2>$amer_Report</br></br>"
 
@@ -203,17 +219,17 @@ function GenerateReportAMER {
     $simpleHtmlReport = ""
 
     if ($null -ne $amer_StateAntivirusDevices -and $amer_StateAntivirusDevices.Count -ge 0) {
-        $sepProbDeviceshtmlReport += '<H3>SEP Problem Devices (' + (Get-ObjNumber $amer_StateAntivirusDevices ) + ') - L2 to verify</H3>';
+        $sepProbDeviceshtmlReport += '<H3>SEP Problem Devices (' + (Get-ObjNumber $amer_StateAntivirusDevices ) + ') - Need L2 to verify</H3>';
         $sepProbDeviceshtmlReport += $amer_StateAntivirusDevices | Select-Object DeviceName, HostName, ADDomain, Location, ManagedBy, StateAntivirus, LastSeen | ConvertTo-Html -Fragment | Out-string;
     }
 
     if ($null -ne $amer_StatePatchDevices -and $amer_StatePatchDevices.Count -ge 0) {
-        $patchProbDeviceshtmlReport += '<H3>Patch Problem Devices (' + (Get-ObjNumber $amer_StatePatchDevices ) + ') - L2 to verify</H3>';
+        $patchProbDeviceshtmlReport += '<H3>Patch Problem Devices (' + (Get-ObjNumber $amer_StatePatchDevices ) + ') - Need L2 to verify</H3>';
         $patchProbDeviceshtmlReport += $amer_StatePatchDevices | Select-Object DeviceName, HostName, ADDomain, Location, ManagedBy, StatePatching, LastSeen | ConvertTo-Html -Fragment | Out-string;
     }
 
     if ($null -ne $amer_StateCarbonBlack -and $amer_StateCarbonBlack.Count -ge 0) {
-        $cbProbDeviceshtmlReport += '<H3>CB Problem Devices (' + (Get-ObjNumber $amer_StateCarbonBlack ) + ') - L2 to verify</H3>';
+        $cbProbDeviceshtmlReport += '<H3>CB Problem Devices (' + (Get-ObjNumber $amer_StateCarbonBlack ) + ') - Need L2 to verify</H3>';
         $cbProbDeviceshtmlReport += $amer_StateCarbonBlack | Select-Object DeviceName, HostName, ADDomain, Location, ManagedBy, StateCarbonBlack, LastSeen | ConvertTo-Html -Fragment | Out-string;
     }
 
@@ -243,6 +259,7 @@ function GenerateReportAMER {
     $report_Object | Add-Member -NotePropertyName 'mailCC' -NotePropertyValue $mailCC
     $report_Object | Add-Member -NotePropertyName 'probDevices' -NotePropertyValue $amer_probDevices
     $report_Object | Add-Member -NotePropertyName 'cbProbDevices' -NotePropertyValue $amer_cbProbDevices
+    $report_Object | Add-Member -NotePropertyName 'cbcProbDevices' -NotePropertyValue $amer_cbcProbDevices
     $report_Object | Add-Member -NotePropertyName 'sepProbDevices' -NotePropertyValue $amer_sepProbDevices
     $report_Object | Add-Member -NotePropertyName 'patchProbDevices' -NotePropertyValue $amer_patchProbDevices
     $report_Object | Add-Member -NotePropertyName 'mgntByProbDevices' -NotePropertyValue $amer_mgntByProbDevices
@@ -320,12 +337,13 @@ function GenerateReportEMEA {
     ### Problem devices in Europe
     #######################################################
     #$emea_probDevices = $emea_Devices | where {$_.ProblemDevice -eq $true}
-    [array]$emea_probDevices = $emea_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) }
-    [array]$emea_cbProbDevices = $emea_probDevices | Where-Object { $_.ProblemCarbonBlack -eq $true }
-    [array]$emea_sepProbDevices = $emea_probDevices | Where-Object { $_.ProblemAntivirus -eq $true }
-    [array]$emea_patchProbDevices = $emea_probDevices | Where-Object { $_.ProblemPatching -eq $true }
-    [array]$emea_mgntByProbDevices = $emea_probDevices | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
-    [array]$emea_adProbDevices = $emea_probDevices | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
+    [array]$emea_probDevices = $emea_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
+    [array]$emea_cbProbDevices = $emea_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
+    [array]$emea_cbcProbDevices = $emea_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
+    [array]$emea_sepProbDevices = $emea_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    [array]$emea_patchProbDevices = $emea_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
+    [array]$emea_mgntByProbDevices = $emea_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
+    [array]$emea_adProbDevices = $emea_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
 
     #$emea_StateAntivirusDevices = $emea_sepProbDevices | Where-Object { "non-corp av".Equals($_.StateAntivirus.Trim().ToLower()) -or "not applicable".Equals($_.StateAntivirus.Trim().ToLower()) }
     #$emea_StatePatchDevices = $emea_patchProbDevices | Where-Object { "agent not found".Equals($_.StatePatching.Trim().ToLower()) -or "needs os version".Equals($_.StatePatching.Trim().ToLower()) -or "not applicable".Equals($_.StatePatching.Trim().ToLower()) }
@@ -337,12 +355,27 @@ function GenerateReportEMEA {
     ##############################################################
     ### Create EPM report file with all Europe problem Devices
     ##############################################################
-    $epmExcel = $emea_adProbDevices | Export-Excel -Path $exportFileName -WorksheetName "AD" -ClearSheet -AutoSize -AutoFilter -FreezePane @(2, 2)
-    $epmExcel = $emea_cbProbDevices | Export-Excel -Path $exportFileName -WorksheetName "CB" -AutoSize -AutoFilter -FreezePane @(2, 2)
-    $epmExcel = $emea_sepProbDevices | Export-Excel -Path $exportFileName -WorksheetName "SEP" -AutoSize -AutoFilter -FreezePane @(2, 2)
-    $epmExcel = $emea_patchProbDevices | Export-Excel -Path $exportFileName -WorksheetName "Patch" -AutoSize -AutoFilter -FreezePane @(2, 2)
-    $epmExcel = $emea_mgntByProbDevices | Export-Excel -Path $exportFileName -WorksheetName "MgmtBy" -AutoSize -AutoFilter -FreezePane @(2, 2)
-    $epmExcel = $emea_probDevices | Export-Excel -Path $exportFileName -WorksheetName ($getDate.ToString("yyyyMMdd").ToString()) -AutoSize -AutoFilter -FreezePane @(2, 2) -PassThru
+    if ($null -ne $emea_adProbDevices -and $emea_adProbDevices.Count -ge 0) {
+        $epmExcel = $emea_adProbDevices | Export-Excel -Path $exportFileName -WorksheetName "AD" -ClearSheet -AutoSize -AutoFilter -FreezePane @(2, 2)
+    }
+    if ($null -ne $emea_cbProbDevices -and $emea_cbProbDevices.Count -ge 0) {
+        $epmExcel = $emea_cbProbDevices | Export-Excel -Path $exportFileName -WorksheetName "CB" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    }
+    if ($null -ne $emea_cbcProbDevices -and $emea_cbcProbDevices.Count -ge 0) {
+        $epmExcel = $emea_cbcProbDevices | Export-Excel -Path $exportFileName -WorksheetName "CBC" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    }
+    #if ($null -ne $emea_sepProbDevices -and $emea_sepProbDevices.Count -ge 0) {
+    #    $epmExcel = $emea_sepProbDevices | Export-Excel -Path $exportFileName -WorksheetName "SEP" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    #}
+    if ($null -ne $emea_patchProbDevices -and $emea_patchProbDevices.Count -ge 0) {
+        $epmExcel = $emea_patchProbDevices | Export-Excel -Path $exportFileName -WorksheetName "Patch" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    }
+    if ($null -ne $emea_mgntByProbDevices -and $emea_mgntByProbDevices.Count -ge 0) {
+        $epmExcel = $emea_mgntByProbDevices | Export-Excel -Path $exportFileName -WorksheetName "MgmtBy" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    }
+    if ($null -ne $emea_probDevices -and $emea_probDevices.Count -ge 0) {
+        $epmExcel = $emea_probDevices | Export-Excel -Path $exportFileName -WorksheetName ($getDate.ToString("yyyyMMdd").ToString()) -AutoSize -AutoFilter -FreezePane @(2, 2) -PassThru
+    }
     $epmExcel.Save();
     $epmExcel.Dispose();
     #$epmExcel.Workbook.Worksheets["SEP"].Cells.Item(1, 10, $epmExcel.Workbook.Worksheets["SEP"].AutoFilterAddress.Rows, 10) | where{ $_.Value.Trim().Equals("Restart Required")} | select {($_.Address).Replace('J','')}
@@ -351,12 +384,12 @@ function GenerateReportEMEA {
     Write-Host "Generate Email report(EMEA) ..."
     Write-ToLogFile -LogContent ("Generate Email report(EMEA) ...")
 
-    $emea_Report = "EMEA - Total: {0}, CB: {1}, SEP: {2}, Patching: {3}, AD: {4}" -f `
+    $emea_Report = "EMEA - Total: {0}, AD: {1}, CB: {2}, CBC: {3}, Patching: {4}" -f `
     (Get-ObjNumber $emea_probDevices ), `
+    (Get-ObjNumber $emea_adProbDevices ), `
     (Get-ObjNumber $emea_cbProbDevices ), `
-    (Get-ObjNumber $emea_sepProbDevices ), `
-    (Get-ObjNumber $emea_patchProbDevices ), `
-    (Get-ObjNumber $emea_adProbDevices );
+    (Get-ObjNumber $emea_cbcProbDevices ), `
+    (Get-ObjNumber $emea_patchProbDevices );
 
     $epmReport = "<H2>EM EMEA Report on $TodayDate</H2>$emea_Report</br></br>"
 
@@ -367,17 +400,17 @@ function GenerateReportEMEA {
     $simpleHtmlReport = ""
 
     if ($null -ne $emea_StateAntivirusDevices -and $emea_StateAntivirusDevices.Count -ge 0) {
-        $sepProbDeviceshtmlReport += '<H3>SEP Problem Devices (' + (Get-ObjNumber $emea_StateAntivirusDevices ) + ') - L2 to verify</H3>';
+        $sepProbDeviceshtmlReport += '<H3>SEP Problem Devices (' + (Get-ObjNumber $emea_StateAntivirusDevices ) + ') - Need L2 to verify</H3>';
         $sepProbDeviceshtmlReport += $emea_StateAntivirusDevices | Select-Object DeviceName, HostName, ADDomain, Location, ManagedBy, StateAntivirus, LastSeen | ConvertTo-Html -Fragment | Out-string;
     }
 
     if ($null -ne $emea_StatePatchDevices -and $emea_StatePatchDevices.Count -ge 0) {
-        $patchProbDeviceshtmlReport += '<H3>Patch Problem Devices (' + (Get-ObjNumber $emea_StatePatchDevices ) + ') - L2 to verify</H3>';
+        $patchProbDeviceshtmlReport += '<H3>Patch Problem Devices (' + (Get-ObjNumber $emea_StatePatchDevices ) + ') - Need L2 to verify</H3>';
         $patchProbDeviceshtmlReport += $emea_StatePatchDevices | Select-Object DeviceName, HostName, ADDomain, Location, ManagedBy, StatePatching, LastSeen | ConvertTo-Html -Fragment | Out-string;
     }
 
     if ($null -ne $emea_StateCarbonBlack -and $emea_StateCarbonBlack.Count -ge 0) {
-        $cbProbDeviceshtmlReport += '<H3>CB Problem Devices (' + (Get-ObjNumber $emea_StateCarbonBlack ) + ') - L2 to verify</H3>';
+        $cbProbDeviceshtmlReport += '<H3>CB Problem Devices (' + (Get-ObjNumber $emea_StateCarbonBlack ) + ') - Need L2 to verify</H3>';
         $cbProbDeviceshtmlReport += $emea_StateCarbonBlack | Select-Object DeviceName, HostName, ADDomain, Location, ManagedBy, StateCarbonBlack, LastSeen | ConvertTo-Html -Fragment | Out-string;
     }
 
@@ -407,6 +440,7 @@ function GenerateReportEMEA {
     $report_Object | Add-Member -NotePropertyName 'mailCC' -NotePropertyValue $mailCC
     $report_Object | Add-Member -NotePropertyName 'probDevices' -NotePropertyValue $emea_probDevices
     $report_Object | Add-Member -NotePropertyName 'cbProbDevices' -NotePropertyValue $emea_cbProbDevices
+    $report_Object | Add-Member -NotePropertyName 'cbcProbDevices' -NotePropertyValue $emea_cbcProbDevices
     $report_Object | Add-Member -NotePropertyName 'sepProbDevices' -NotePropertyValue $emea_sepProbDevices
     $report_Object | Add-Member -NotePropertyName 'patchProbDevices' -NotePropertyValue $emea_patchProbDevices
     $report_Object | Add-Member -NotePropertyName 'mgntByProbDevices' -NotePropertyValue $emea_mgntByProbDevices
@@ -503,7 +537,7 @@ function GenerateReportAPAC {
     [array]$cn_probDevices = $cn_Devices | Where-Object { $_.ProblemDevice -eq $true }
     [array]$cn_cbProbDevices = $cn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$cn_cbcProbDevices = $cn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
-    [array]$cn_sepProbDevices = $cn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    #[array]$cn_sepProbDevices = $cn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     [array]$cn_patchProbDevices = $cn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
     #[array]$cn_mgntByProbDevices = $cn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$cn_adProbDevices = $cn_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
@@ -514,7 +548,7 @@ function GenerateReportAPAC {
     [array]$hk_probDevices = $hk_Devices | Where-Object { $_.ProblemDevice -eq $true }
     [array]$hk_cbProbDevices = $hk_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$hk_cbcProbDevices = $hk_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
-    [array]$hk_sepProbDevices = $hk_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    #[array]$hk_sepProbDevices = $hk_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     [array]$hk_patchProbDevices = $hk_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
     #[array]$hk_mgntByProbDevices = $hk_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$hk_adProbDevices = $hk_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
@@ -525,7 +559,7 @@ function GenerateReportAPAC {
     [array]$jp_probDevices = $jp_Devices | Where-Object { $_.ProblemDevice -eq $true }
     [array]$jp_cbProbDevices = $jp_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$jp_cbcProbDevices = $jp_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
-    [array]$jp_sepProbDevices = $jp_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    #[array]$jp_sepProbDevices = $jp_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     [array]$jp_patchProbDevices = $jp_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
     #[array]$jp_mgntByProbDevices = $jp_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$jp_adProbDevices = $jp_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
@@ -536,7 +570,7 @@ function GenerateReportAPAC {
     [array]$kr_probDevices = $kr_Devices | Where-Object { $_.ProblemDevice -eq $true }
     [array]$kr_cbProbDevices = $kr_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$kr_cbcProbDevices = $kr_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
-    [array]$kr_sepProbDevices = $kr_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    #[array]$kr_sepProbDevices = $kr_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     [array]$kr_patchProbDevices = $kr_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
     #[array]$kr_mgntByProbDevices = $kr_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$kr_adProbDevices = $kr_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
@@ -547,7 +581,7 @@ function GenerateReportAPAC {
     [array]$my_probDevices = $my_Devices | Where-Object { $_.ProblemDevice -eq $true }
     [array]$my_cbProbDevices = $my_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$my_cbcProbDevices = $my_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
-    [array]$my_sepProbDevices = $my_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    #[array]$my_sepProbDevices = $my_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     [array]$my_patchProbDevices = $my_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
     #[array]$my_mgntByProbDevices = $my_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$my_adProbDevices = $my_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
@@ -558,7 +592,7 @@ function GenerateReportAPAC {
     [array]$ptc_probDevices = $ptc_Devices | Where-Object { $_.ProblemDevice -eq $true }
     [array]$ptc_cbProbDevices = $ptc_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$ptc_cbcProbDevices = $ptc_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
-    [array]$ptc_sepProbDevices = $ptc_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    #[array]$ptc_sepProbDevices = $ptc_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     [array]$ptc_patchProbDevices = $ptc_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
     #[array]$ptc_mgntByProbDevices = $ptc_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$ptc_adProbDevices = $ptc_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
@@ -569,7 +603,7 @@ function GenerateReportAPAC {
     [array]$sg_probDevices = $sg_Devices | Where-Object { $_.ProblemDevice -eq $true }
     [array]$sg_cbProbDevices = $sg_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$sg_cbcProbDevices = $sg_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
-    [array]$sg_sepProbDevices = $sg_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    #[array]$sg_sepProbDevices = $sg_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     [array]$sg_patchProbDevices = $sg_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
     #[array]$sg_mgntByProbDevices = $sg_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$sg_adProbDevices = $sg_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
@@ -580,7 +614,7 @@ function GenerateReportAPAC {
     [array]$tw_probDevices = $tw_Devices | Where-Object { $_.ProblemDevice -eq $true }
     [array]$tw_cbProbDevices = $tw_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$tw_cbcProbDevices = $tw_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
-    [array]$tw_sepProbDevices = $tw_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    #[array]$tw_sepProbDevices = $tw_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     [array]$tw_patchProbDevices = $tw_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
     #[array]$tw_mgntByProbDevices = $tw_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$tw_adProbDevices = $tw_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
@@ -591,7 +625,7 @@ function GenerateReportAPAC {
     [array]$vn_probDevices = $vn_Devices | Where-Object { $_.ProblemDevice -eq $true }
     [array]$vn_cbProbDevices = $vn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$vn_cbcProbDevices = $vn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
-    [array]$vn_sepProbDevices = $vn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    #array]$vn_sepProbDevices = $vn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     [array]$vn_patchProbDevices = $vn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
     #[array]$vn_mgntByProbDevices = $vn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$vn_adProbDevices = $vn_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
@@ -622,7 +656,7 @@ function GenerateReportAPAC {
     [array]$asub_probDevices = $asub_Devices | Where-Object { $_.ProblemDevice -eq $true }
     [array]$asub_cbProbDevices = $asub_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$asub_cbcProbDevices = $asub_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
-    [array]$asub_sepProbDevices = $asub_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
+    #[array]$asub_sepProbDevices = $asub_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     [array]$asub_patchProbDevices = $asub_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
     #[array]$asub_mgntByProbDevices = $asub_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$asub_adProbDevices = $asub_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
@@ -705,9 +739,9 @@ function GenerateReportAPAC {
     if ($null -ne $apac_cbcProbDevices -and $apac_cbcProbDevices.Count -ge 0) {
         $epmExcel = $apac_cbcProbDevices | Export-Excel -Path $exportFileName -WorksheetName "CBC" -AutoSize -AutoFilter -FreezePane @(2, 2)
     }
-    if ($null -ne $apac_sepProbDevices -and $apac_sepProbDevices.Count -ge 0) {
-        $epmExcel = $apac_sepProbDevices | Export-Excel -Path $exportFileName -WorksheetName "SEP" -AutoSize -AutoFilter -FreezePane @(2, 2)
-    }
+    #if ($null -ne $apac_sepProbDevices -and $apac_sepProbDevices.Count -ge 0) {
+    #    $epmExcel = $apac_sepProbDevices | Export-Excel -Path $exportFileName -WorksheetName "SEP" -AutoSize -AutoFilter -FreezePane @(2, 2)
+    #}
     if ($null -ne $apac_patchProbDevices -and $apac_patchProbDevices.Count -ge 0) {
         $epmExcel = $apac_patchProbDevices | Export-Excel -Path $exportFileName -WorksheetName "Patch" -AutoSize -AutoFilter -FreezePane @(2, 2)
     }
@@ -723,64 +757,57 @@ function GenerateReportAPAC {
     Write-Host "Generate Email report(APAC) ..."
     Write-ToLogFile -LogContent ("Generate Email report(APAC) ...")
 
-    $cn_hk_Report = "Hongkong & Mainland China - Total: {0} ({1}/{2}), CB: {3}/{4}, SEP: {5}/{6}, Patch: {7}/{8}, AD: {9}/{10}, [CBC: {10}/{11}]" -f `
+    $cn_hk_Report = "Hongkong & Mainland China - Total: {0} ({1}/{2}), AD: {3}/{4}, CB: {5}/{6}, CBC: {7}/{8}, Patch: {9}/{10}" -f `
     (Get-ObjNumber $cn_hk_probDevices), `
     (Get-ObjNumber $hk_probDevices), (Get-ObjNumber $cn_probDevices), `
-    (Get-ObjNumber $hk_cbProbDevices), (Get-ObjNumber $cn_cbProbDevices), `
-    (Get-ObjNumber $hk_sepProbDevices), (Get-ObjNumber $cn_sepProbDevices), `
-    (Get-ObjNumber $hk_patchProbDevices), (Get-ObjNumber $cn_patchProbDevices), `
     (Get-ObjNumber $hk_adProbDevices), (Get-ObjNumber $cn_adProbDevices), `
-    (Get-ObjNumber $hk_cbcProbDevices), (Get-ObjNumber $cn_cbcProbDevices);
+    (Get-ObjNumber $hk_cbProbDevices), (Get-ObjNumber $cn_cbProbDevices), `
+    (Get-ObjNumber $hk_cbcProbDevices), (Get-ObjNumber $cn_cbcProbDevices), `
+    (Get-ObjNumber $hk_patchProbDevices), (Get-ObjNumber $cn_patchProbDevices);
 
-    $kr_jp_tw_Report = "Korea, Japan & Taiwan - Total: {0} ({1}/{2}/{3}), CB: {4}/{5}/{6}, SEP: {7}/{8}/{9}, Patch: {10}/{11}/{12}, AD: {13}/{14}/{15}, [CBC: {16}/{17}/{18}]" -f `
+    $kr_jp_tw_Report = "Korea, Japan & Taiwan - Total: {0} ({1}/{2}/{3}), AD: {4}/{5}/{6}, CB: {7}/{8}/{9}, CBC: {10}/{11}/{12}, Patch: {13}/{14}/{15}" -f `
     (Get-ObjNumber $kr_jp_tw_probDevices), `
     (Get-ObjNumber $kr_probDevices), (Get-ObjNumber $jp_probDevices), (Get-ObjNumber $tw_probDevices), `
-    (Get-ObjNumber $kr_cbProbDevices), (Get-ObjNumber $jp_cbProbDevices), (Get-ObjNumber $tw_cbProbDevices), `
-    (Get-ObjNumber $kr_sepProbDevices), (Get-ObjNumber $jp_sepProbDevices), (Get-ObjNumber $tw_sepProbDevices), `
-    (Get-ObjNumber $kr_patchProbDevices), (Get-ObjNumber $jp_patchProbDevices), (Get-ObjNumber $tw_patchProbDevices), `
     (Get-ObjNumber $kr_adProbDevices), (Get-ObjNumber $jp_adProbDevices), (Get-ObjNumber $tw_adProbDevices), `
-    (Get-ObjNumber $kr_cbcProbDevices), (Get-ObjNumber $jp_cbcProbDevices), (Get-ObjNumber $tw_cbcProbDevices);
+    (Get-ObjNumber $kr_cbProbDevices), (Get-ObjNumber $jp_cbProbDevices), (Get-ObjNumber $tw_cbProbDevices), `
+    (Get-ObjNumber $kr_cbcProbDevices), (Get-ObjNumber $jp_cbcProbDevices), (Get-ObjNumber $tw_cbcProbDevices), `
+    (Get-ObjNumber $kr_patchProbDevices), (Get-ObjNumber $jp_patchProbDevices), (Get-ObjNumber $tw_patchProbDevices);
 
-    $my_sg_vn_Report = "Malaysia, Singapore & Vietnam - Total: {0} ({1}/{2}/{3}), CB: {4}/{5}/{6}, SEP: {7}/{8}/{9}, Patch: {10}/{11}/{12}, AD: {13}/{14}/{15}, [CBC: {16}/{17}/{18}]" -f `
+    $my_sg_vn_Report = "Malaysia, Singapore & Vietnam - Total: {0} ({1}/{2}/{3}), AD: {4}/{5}/{6}, CB: {7}/{8}/{9}, CBC: {10}/{11}/{12}, Patch: {13}/{14}/{15}" -f `
     (Get-ObjNumber $my_sg_vn_probDevices), `
     (Get-ObjNumber $my_probDevices), (Get-ObjNumber $sg_probDevices), (Get-ObjNumber $vn_probDevices), `
-    (Get-ObjNumber $my_cbProbDevices), (Get-ObjNumber $sg_cbProbDevices), (Get-ObjNumber $vn_cbProbDevices), `
-    (Get-ObjNumber $my_sepProbDevices), (Get-ObjNumber $sg_sepProbDevices), (Get-ObjNumber $vn_sepProbDevices), `
-    (Get-ObjNumber $my_patchProbDevices), (Get-ObjNumber $sg_patchProbDevices), (Get-ObjNumber $vn_patchProbDevices), `
     (Get-ObjNumber $my_adProbDevices), (Get-ObjNumber $sg_adProbDevices), (Get-ObjNumber $vn_adProbDevices), `
-    (Get-ObjNumber $my_cbcProbDevices), (Get-ObjNumber $sg_cbcProbDevices), (Get-ObjNumber $vn_cbcProbDevices);
+    (Get-ObjNumber $my_cbProbDevices), (Get-ObjNumber $sg_cbProbDevices), (Get-ObjNumber $vn_cbProbDevices), `
+    (Get-ObjNumber $my_cbcProbDevices), (Get-ObjNumber $sg_cbcProbDevices), (Get-ObjNumber $vn_cbcProbDevices), `
+    (Get-ObjNumber $my_patchProbDevices), (Get-ObjNumber $sg_patchProbDevices), (Get-ObjNumber $vn_patchProbDevices);
 
-    $ptc_Report = "Philippines PTC - Total: {0}, CB: {1}, SEP: {2}, Patching: {3}, AD: {4}, [CBC: {5}]" -f `
+    $ptc_Report = "Philippines PTC - Total: {0}, AD: {1}, CB: {2}, CBC: {3}, Patching: {4}" -f `
     (Get-ObjNumber $ptc_probDevices ), `
-    (Get-ObjNumber $ptc_cbProbDevices ), `
-    (Get-ObjNumber $ptc_sepProbDevices ), `
-    (Get-ObjNumber $ptc_patchProbDevices ), `
     (Get-ObjNumber $ptc_adProbDevices ), `
-    (Get-ObjNumber $ptc_cbcProbDevices );
+    (Get-ObjNumber $ptc_cbProbDevices ), `
+    (Get-ObjNumber $ptc_cbcProbDevices ), `
+    (Get-ObjNumber $ptc_patchProbDevices ); 
 
-    $asub_Report = "APAC Subcon - Total: {0}, CB: {1}, SEP: {2}, Patching: {3}, AD: {4}, [CBC: {5}]" -f `
+    $asub_Report = "APAC Subcon - Total: {0}, AD: {1}, CB: {2}, CBC: {3}, Patching: {4}" -f `
     (Get-ObjNumber $asub_probDevices  ), `
-    (Get-ObjNumber $asub_cbProbDevices ), `
-    (Get-ObjNumber $asub_sepProbDevices ), `
-    (Get-ObjNumber $asub_patchProbDevices ), `
     (Get-ObjNumber $asub_adProbDevices ), `
-    (Get-ObjNumber $asub_cbcProbDevices );
+    (Get-ObjNumber $asub_cbProbDevices ), `
+    (Get-ObjNumber $asub_cbcProbDevices ), `
+    (Get-ObjNumber $asub_patchProbDevices );
 
-    $apac_Report = "All APAC - Total: {0}, CB: {1}, SEP: {2}, Patching: {3}, AD: {4}, [CBC: {5}]" -f `
+    $apac_Report = "All APAC - Total: {0}, AD: {1}, CB: {2}, CBC: {3}, Patching: {4}" -f `
     (Get-ObjNumber $apac_probDevices  ), `
-    (Get-ObjNumber $apac_cbProbDevices ), `
-    (Get-ObjNumber $apac_sepProbDevices ), `
-    (Get-ObjNumber $apac_patchProbDevices ), `
     (Get-ObjNumber $apac_adProbDevices ), `
-    (Get-ObjNumber $apac_cbcProbDevices );
-
-
-    $apac_Total_Report = "APAC - Total: {0}, CB: {1}, SEP: {2}, Patching: {3}, AD: {4}" -f `
-    (Get-ObjNumber $apac_probDevices  ), `
     (Get-ObjNumber $apac_cbProbDevices ), `
-    (Get-ObjNumber $apac_sepProbDevices ), `
-    (Get-ObjNumber $apac_patchProbDevices ), `
-    (Get-ObjNumber $apac_adProbDevices );
+    (Get-ObjNumber $apac_cbcProbDevices ), `
+    (Get-ObjNumber $apac_patchProbDevices );
+
+    $apac_Total_Report = "APAC - Total: {0}, AD: {1}, CB: {2}, CBC: {3}, Patching: {4}" -f `
+    (Get-ObjNumber $apac_probDevices  ), `
+    (Get-ObjNumber $apac_adProbDevices ), `
+    (Get-ObjNumber $apac_cbProbDevices ), `
+    (Get-ObjNumber $apac_cbcProbDevices ), `
+    (Get-ObjNumber $apac_patchProbDevices );
     
     <#
     $apac_Total_Report = "APAC - Total: {0}, CB: {1}, SEP: {2}, Patching: {3}, AD: {4}, [CBC: {5}]" -f `
@@ -1095,10 +1122,10 @@ if (Test-Path -Path $XlsxFileName) {
     $emea_ReportObj = GenerateReportEMEA -sourceData $sourceData -exportFileName $ExportFiles[1] -isTesting $OnTestingStatus
     $apac_ReportObj = GenerateReportAPAC -sourceData $sourceData -exportFileName $ExportFiles[2] -isTesting $OnTestingStatus
 
-    #SendGlobalReport -reportObjs @($amer_ReportObj, $apac_ReportObj, $emea_ReportObj) -isTesting $OnTestingStatus
+    SendGlobalReport -reportObjs @($amer_ReportObj, $apac_ReportObj, $emea_ReportObj) -isTesting $OnTestingStatus
     #SendRegionsReport -report_Obj $amer_ReportObj
     #SendRegionsReport -report_Obj $emea_ReportObj
-    #SendRegionsReport -report_Obj $apac_ReportObj
+    SendRegionsReport -report_Obj $apac_ReportObj
 
     UpdateReportToTeams -reportObjs @($amer_ReportObj, $apac_ReportObj, $emea_ReportObj) -isTesting $OnTestingStatus
 
