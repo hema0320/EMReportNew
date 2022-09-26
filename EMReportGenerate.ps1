@@ -503,7 +503,6 @@ function GenerateReportAPAC {
             "WaiShong.Lee@microchip.com", 
             "KokKien.Ng@microchip.com", 
             "CarlAngelo.Nievarez@microchip.com",
-            "karen.chung@microchip.com",
             "kevin.yeap@microchip.com");
         [string[]]$mailCC = @("Navakarti.Satiyah@microchip.com")
 
@@ -947,7 +946,17 @@ function SendGlobalReport {
             
         }
         else {
-            [string[]]$mailTo = @("Navakarti.Satiyah@microchip.com", "Peter.Dickenson@microchip.com", "Sameer.Ebadi@microchip.com");
+            [string[]]$mailTo = @("Ariel.Crespo@microchip.com", 
+                "Corbin.Marginson@microchip.com", 
+                "Jimmy.Sha@microchip.com", 
+                "Julian.Tseng@microchip.com", 
+                "Lam.Tran@microchip.com", 
+                "Markus.Bernhart@microchip.com", 
+                "Martin.Denning@microchip.com", 
+                "Navakarti.Satiyah@microchip.com", 
+                "Peter.Dickenson@microchip.com", 
+                "Sameer.Ebadi@microchip.com", 
+                "WaiShong.Lee@microchip.com");
             [string[]]$mailCC = @("Jason.So@microchip.com")
     
         }
