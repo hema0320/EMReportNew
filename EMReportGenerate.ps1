@@ -141,7 +141,13 @@ function GenerateReportAMER {
     Write-ToLogFile -LogContent ("Data(AMER) filtering ...")
 
     $report_Object = New-Object -TypeName PSObject
-    $amer_Devices = $sourceData | Where-Object { $_.Location.ToLower().StartsWith("us") -or $_.Location.ToLower().StartsWith("ca") -and ($_.Location.ToLower().Contains("subcon") -eq $false) -and ($_.Location.ToLower().Contains("dimerco") -eq $false) } | Sort-Object Location  ### Devices in America, exclude Subcon devices
+    $amer_Devices = $sourceData | Where-Object { $_.Location.ToLower().StartsWith("us") -or `
+            $_.Location.ToLower().StartsWith("ca") -and `
+        ($_.Location.ToLower().Contains("tempe") -eq $false) -and `
+        ($_.Location.ToLower().Contains("colorado") -eq $false) -and `
+        ($_.Location.ToLower().Contains("gresham") -eq $false) -and `
+        ($_.Location.ToLower().Contains("subcon") -eq $false) -and `
+        ($_.Location.ToLower().Contains("dimerco") -eq $false) } | Sort-Object Location  ### Devices in America, exclude Subcon devices
 
     #######################################################
     ### Problem devices in America
@@ -957,7 +963,7 @@ function SendGlobalReport {
                 "Peter.Dickenson@microchip.com", 
                 "Sameer.Ebadi@microchip.com", 
                 "WaiShong.Lee@microchip.com");
-            [string[]]$mailCC = @("Jason.So@microchip.com")
+            [string[]]$mailCC = @("Jason.So@microchip.com", "Peter.Khoo@microchip.com", "Emmanuel.Saindon@microchip.com")
     
         }
 
