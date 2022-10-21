@@ -509,7 +509,8 @@ function GenerateReportAPAC {
             "WaiShong.Lee@microchip.com", 
             "KokKien.Ng@microchip.com", 
             "CarlAngelo.Nievarez@microchip.com",
-            "kevin.yeap@microchip.com");
+            "kevin.yeap@microchip.com", 
+            "andykp.lo@microchip.com");
         [string[]]$mailCC = @("Navakarti.Satiyah@microchip.com")
 
         #[string[]]$mailToCN_HK = @("Nitin.Zhao@microchip.com", "Lenard.Tai@microchip.com", "Ian.Lai@microchip.com", "Eric.Chen@microchip.com", "Roxie.Lee@microchip.com")
@@ -708,10 +709,15 @@ function GenerateReportAPAC {
     [array]$apac_mgntByProbDevices = $apac_probDevices | Where-Object { $_ -ne $null } | Where-Object { $null -eq $_.ManagedBy -or "".Equals($_.ManagedBy.Trim()) }
     [array]$apac_adProbDevices = $apac_probDevices | Where-Object { $_ -ne $null } | Where-Object { "--not bound--".Equals($_.ADDomain.Trim().ToLower()) }
 
-    [array]$apac_StateAntivirusDevices = $apac_sepProbDevices | Where-Object { "non-corp av".Equals($_.StateAntivirus.Trim().ToLower()) -or "not applicable".Equals($_.StateAntivirus.Trim().ToLower()) }
-    [array]$apac_StatePatchDevices = $apac_patchProbDevices | Where-Object { "agent not found".Equals($_.StatePatching.Trim().ToLower()) -or "needs os version".Equals($_.StatePatching.Trim().ToLower()) -or "not applicable".Equals($_.StatePatching.Trim().ToLower()) }
-    [array]$apac_StateCarbonBlack = $apac_cbProbDevices | Where-Object { "not connecting".Equals($_.StateCarbonBlack.Trim().ToLower()) }
-
+    if ($null -ne $apac_sepProbDevices -and $apac_sepProbDevices.Count -ge 0) {
+        [array]$apac_StateAntivirusDevices = $apac_sepProbDevices | Where-Object { "non-corp av".Equals($_.StateAntivirus.Trim().ToLower()) -or "not applicable".Equals($_.StateAntivirus.Trim().ToLower()) }
+    }
+    if ($null -ne $apac_patchProbDevices -and $apac_patchProbDevices.Count -ge 0) {
+        [array]$apac_StatePatchDevices = $apac_patchProbDevices | Where-Object { "agent not found".Equals($_.StatePatching.Trim().ToLower()) -or "needs os version".Equals($_.StatePatching.Trim().ToLower()) -or "not applicable".Equals($_.StatePatching.Trim().ToLower()) }
+    }
+    if ($null -ne $apac_cbProbDevices -and $apac_cbProbDevices.Count -ge 0) {
+        [array]$apac_StateCarbonBlack = $apac_cbProbDevices | Where-Object { "not connecting".Equals($_.StateCarbonBlack.Trim().ToLower()) }
+    }
     <#
     Write-Host ("Generate Excel file(CN_HK): {0}" -f $exportFileName_2)
     Write-ToLogFile -LogContent ("Generate Excel file(CN_HK): {0}" -f $exportFileName_2)
