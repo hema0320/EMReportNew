@@ -175,6 +175,7 @@ function GenerateReportAMER {
     #$excel1.Save();
     #$excel1.Dispose();
 
+    #$list = $amer_probDevices | Where-Object { (IsNewSystem -objItem $_) -eq $false }
     Write-Host ("Generate Excel file(AMER): {0}" -f $exportFileName)
     Write-ToLogFile -LogContent ("Generate Excel file(AMER): {0}" -f $exportFileName)
     ##############################################################
@@ -540,7 +541,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in China
     #######################################################
-    [array]$cn_probDevices = $cn_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$cn_probDevices = $cn_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     [array]$cn_cbProbDevices = $cn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$cn_cbcProbDevices = $cn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
     #[array]$cn_sepProbDevices = $cn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
@@ -551,7 +552,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in Hong kong
     #######################################################
-    [array]$hk_probDevices = $hk_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$hk_probDevices = $hk_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     [array]$hk_cbProbDevices = $hk_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$hk_cbcProbDevices = $hk_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
     #[array]$hk_sepProbDevices = $hk_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
@@ -562,7 +563,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in Japan
     #######################################################
-    [array]$jp_probDevices = $jp_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$jp_probDevices = $jp_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     [array]$jp_cbProbDevices = $jp_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$jp_cbcProbDevices = $jp_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
     #[array]$jp_sepProbDevices = $jp_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
@@ -573,7 +574,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in Korea
     #######################################################
-    [array]$kr_probDevices = $kr_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$kr_probDevices = $kr_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     [array]$kr_cbProbDevices = $kr_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$kr_cbcProbDevices = $kr_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
     #[array]$kr_sepProbDevices = $kr_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
@@ -584,7 +585,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in Malaysia
     #######################################################
-    [array]$my_probDevices = $my_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$my_probDevices = $my_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     [array]$my_cbProbDevices = $my_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$my_cbcProbDevices = $my_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
     #[array]$my_sepProbDevices = $my_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
@@ -595,7 +596,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in Philippines
     #######################################################
-    [array]$ptc_probDevices = $ptc_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$ptc_probDevices = $ptc_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     [array]$ptc_cbProbDevices = $ptc_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$ptc_cbcProbDevices = $ptc_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
     #[array]$ptc_sepProbDevices = $ptc_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
@@ -606,7 +607,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in Singapore
     #######################################################
-    [array]$sg_probDevices = $sg_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$sg_probDevices = $sg_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     [array]$sg_cbProbDevices = $sg_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$sg_cbcProbDevices = $sg_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
     #[array]$sg_sepProbDevices = $sg_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
@@ -617,7 +618,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in Taiwan
     #######################################################
-    [array]$tw_probDevices = $tw_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$tw_probDevices = $tw_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     [array]$tw_cbProbDevices = $tw_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$tw_cbcProbDevices = $tw_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
     #[array]$tw_sepProbDevices = $tw_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
@@ -628,7 +629,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in Vietnam
     #######################################################
-    [array]$vn_probDevices = $vn_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$vn_probDevices = $vn_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     [array]$vn_cbProbDevices = $vn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$vn_cbcProbDevices = $vn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
     #array]$vn_sepProbDevices = $vn_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
@@ -639,7 +640,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in Australia
     #######################################################
-    [array]$au_probDevices = $au_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$au_probDevices = $au_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     #[array]$au_cbProbDevices = $au_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     #[array]$au_sepProbDevices = $au_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     #[array]$au_patchProbDevices = $au_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
@@ -649,7 +650,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in Tekron
     #######################################################
-    [array]$nz_probDevices = $nz_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$nz_probDevices = $nz_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     #[array]$nz_cbProbDevices = $nz_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     #[array]$nz_sepProbDevices = $nz_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
     #[array]$nz_patchProbDevices = $nz_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemPatching -eq $true }
@@ -659,7 +660,7 @@ function GenerateReportAPAC {
     #######################################################
     ### Problem devices in APAC Subcon
     #######################################################
-    [array]$asub_probDevices = $asub_Devices | Where-Object { $_.ProblemDevice -eq $true }
+    [array]$asub_probDevices = $asub_Devices | Where-Object { $_.ProblemDevice -eq $true -and ("windows pc".Equals($_.DeviceType.Trim().ToLower()) -or "apple mac".Equals($_.DeviceType.Trim().ToLower())) } | Where-Object { $_ -ne $null }
     [array]$asub_cbProbDevices = $asub_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCarbonBlack -eq $true }
     [array]$asub_cbcProbDevices = $asub_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemCBCloud -eq $true }
     #[array]$asub_sepProbDevices = $asub_probDevices | Where-Object { $_ -ne $null } | Where-Object { $_.ProblemAntivirus -eq $true }
@@ -1049,6 +1050,26 @@ function UpdateReportToTeams() {
     else {
         Write-Host ("Error when update report to teams tasks !!!, detail: {0}" -f $error[0])
         Write-ToLogFile -LogContent ("Error when update report to teams tasks !!!, detail: {0}" -f $error[0])
+    }
+}
+
+function IsNewSystem([object]$objItem) {
+    if ($null -eq $objItem) {
+        return $false;
+    }
+    else {
+        if ([bool]($objItem.PSObject.Properties.name -match "FirstSeen")) {
+            $result = $GetDate - (Get-Date $objItem.FirstSeen)
+            if ($result.TotalDays -le 3) {
+                return $true
+            }
+            else {
+                return $false
+            }
+        }
+        else {
+            return $false
+        }
     }
 }
 
