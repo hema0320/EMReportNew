@@ -146,6 +146,7 @@ function GenerateReportAMER {
         ($_.Location.ToLower().Contains("tempe") -eq $false) -and `
         ($_.Location.ToLower().Contains("colorado") -eq $false) -and `
         ($_.Location.ToLower().Contains("gresham") -eq $false) -and `
+        ($_.Location.ToLower().Contains("boulder") -eq $false) -and `
         ($_.Location.ToLower().Contains("subcon") -eq $false) -and `
         ($_.Location.ToLower().Contains("dimerco") -eq $false) } | Sort-Object Location  ### Devices in America, exclude Subcon devices
 
