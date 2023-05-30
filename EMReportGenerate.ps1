@@ -7,6 +7,9 @@ function Get-ObjNumber([object]$objItem) {
     if ($null -eq $objItem) {
         return 0;
     }
+    if ($objItem -is [system.Object]) {
+        return 1;
+    }
     if ($objItem -isnot [System.Array]) {
         return 1;
     }
@@ -770,6 +773,13 @@ function GenerateReportAPAC {
     Write-Host "Generate Email report(APAC) ..."
     Write-ToLogFile -LogContent ("Generate Email report(APAC) ...")
 
+    Write-Host $cn_hk_probDevices.Length
+    Write-ToLogFile -LogContent ("cn_hk_probDevices {0}" -f $cn_hk_probDevices.Length)
+    Write-ToLogFile -LogContent ("{0}" -f $cn_hk_probDevices)
+    Write-Host $my_sg_vn_probDevices.Length
+    Write-ToLogFile -LogContent ("my_sg_vn_probDevices {0}" -f $my_sg_vn_probDevices.Length)
+    Write-ToLogFile -LogContent ("{0}" -f $my_sg_vn_probDevices)
+
     $cn_hk_Report = "Hongkong & Mainland China - Total: {0} ({1}/{2}), AD: {3}/{4}, CB: {5}/{6}, CBC: {7}/{8}, Patch: {9}/{10}" -f `
     (Get-ObjNumber $cn_hk_probDevices), `
     (Get-ObjNumber $hk_probDevices), (Get-ObjNumber $cn_probDevices), `
@@ -968,7 +978,6 @@ function SendGlobalReport {
                 "Markus.Bernhart@microchip.com", 
                 "Martin.Denning@microchip.com", 
                 "Navakarti.Satiyah@microchip.com", 
-                "Peter.Dickenson@microchip.com", 
                 "Sameer.Ebadi@microchip.com", 
                 "WaiShong.Lee@microchip.com");
             [string[]]$mailCC = @("Jason.So@microchip.com", "Peter.Khoo@microchip.com", "Emmanuel.Saindon@microchip.com")
@@ -1022,7 +1031,7 @@ function UpdateReportToTeams() {
         Connect-MgGraph -Scopes "User.Read.All", "Group.ReadWrite.All"
 
         $result = Invoke-MgGraphRequest -Method GET $titleUrl
-        if (($result -ne 0) -and (($result.title.toString()).ToLower().StartsWith("vulnerable machines"))) {
+        if (($result -ne 0) -and (($result.title.toString()).ToLower().StartsWith("at risk in em"))) {
 
             $result = Invoke-MgGraphRequest -Method GET $detailUrl
 
