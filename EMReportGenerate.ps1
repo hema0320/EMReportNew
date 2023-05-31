@@ -7,14 +7,14 @@ function Get-ObjNumber([object]$objItem) {
     if ($null -eq $objItem) {
         return 0;
     }
-    if ($objItem -is [system.Object]) {
-        return 1;
-    }
     if ($objItem -isnot [System.Array]) {
         return 1;
     }
     if ($objItem -is [system.array]) {
         return $objItem.Count
+    }
+    if ($objItem -is [system.Object]) {
+        return 1;
     }
 }
 
@@ -515,7 +515,7 @@ function GenerateReportAPAC {
             "KokKien.Ng@microchip.com", 
             "CarlAngelo.Nievarez@microchip.com",
             "kevin.yeap@microchip.com", 
-            "andykp.lo@microchip.com");
+            "christopher.huang@microchip.com");
         [string[]]$mailCC = @("Navakarti.Satiyah@microchip.com")
 
         #[string[]]$mailToCN_HK = @("Nitin.Zhao@microchip.com", "Lenard.Tai@microchip.com", "Ian.Lai@microchip.com", "Eric.Chen@microchip.com", "Roxie.Lee@microchip.com")
@@ -681,7 +681,14 @@ function GenerateReportAPAC {
     #######################################################
     ### Total problem devices in CN_HK
     #######################################################
-    $cn_hk_probDevices = ($cn_probDevices + $hk_probDevices)
+    $cn_hk_probDevices = ($cn_probDevices + $hk_probDevices) | Where-Object { $_ -ne $null }
+    Write-ToLogFile -LogContent ("cn_probDevices {0}" -f (Get-ObjNumber $cn_probDevices))
+    Write-ToLogFile -LogContent ("cn_probDevices: {0}" -f (($cn_probDevices | Select-Object -ExpandProperty DeviceName) -join ", "))
+    Write-ToLogFile -LogContent ("hk_probDevices {0}" -f (Get-ObjNumber $hk_probDevices))
+    Write-ToLogFile -LogContent ("hk_probDevices: {0}" -f (($hk_probDevices | Select-Object -ExpandProperty DeviceName) -join ", "))
+    Write-Host (Get-ObjNumber $cn_hk_probDevices)
+    Write-ToLogFile -LogContent ("cn_hk_probDevices {0}" -f (Get-ObjNumber $cn_hk_probDevices))
+    Write-ToLogFile -LogContent ("cn_hk_probDevices: {0}" -f (($cn_hk_probDevices | Select-Object -ExpandProperty DeviceName) -join ", "))
 
     #######################################################
     ### Total devices in KR_JP_TW
@@ -691,7 +698,10 @@ function GenerateReportAPAC {
     #######################################################
     ### Total problem devices in KR_JP_TW
     #######################################################
-    $kr_jp_tw_probDevices = ($kr_probDevices + $jp_probDevices + $tw_probDevices)
+    $kr_jp_tw_probDevices = ($kr_probDevices + $jp_probDevices + $tw_probDevices) | Where-Object { $_ -ne $null }
+    Write-Host (Get-ObjNumber $kr_jp_tw_probDevices)
+    Write-ToLogFile -LogContent ("kr_jp_tw_probDevices {0}" -f $kr_jp_tw_probDevices.Length)
+    Write-ToLogFile -LogContent ("{0}" -f (($kr_jp_tw_probDevices | Select-Object -ExpandProperty DeviceName) -join ", "))
 
     #######################################################
     ### Total devices in MY_SG_VN
@@ -701,7 +711,11 @@ function GenerateReportAPAC {
     #######################################################
     ### Total problem devices in MY_SG_VN
     #######################################################
-    $my_sg_vn_probDevices = ($my_probDevices + $sg_probDevices + $vn_probDevices)
+    $my_sg_vn_probDevices = ($my_probDevices + $sg_probDevices + $vn_probDevices) | Where-Object { $_ -ne $null }
+    Write-Host (Get-ObjNumber $my_sg_vn_probDevices)
+    Write-ToLogFile -LogContent ("my_sg_vn_probDevices {0}" -f $my_sg_vn_probDevices.Length)
+    # Write-ToLogFile -LogContent ("{0}" -f ($my_sg_vn_probDevices | Select-Object DeviceName))
+    Write-ToLogFile -LogContent ("{0}" -f (($my_sg_vn_probDevices | Select-Object -ExpandProperty DeviceName) -join ", "))
 
     #######################################################
     ### Problem devices in whole APAC
@@ -772,13 +786,6 @@ function GenerateReportAPAC {
 
     Write-Host "Generate Email report(APAC) ..."
     Write-ToLogFile -LogContent ("Generate Email report(APAC) ...")
-
-    Write-Host $cn_hk_probDevices.Length
-    Write-ToLogFile -LogContent ("cn_hk_probDevices {0}" -f $cn_hk_probDevices.Length)
-    Write-ToLogFile -LogContent ("{0}" -f $cn_hk_probDevices)
-    Write-Host $my_sg_vn_probDevices.Length
-    Write-ToLogFile -LogContent ("my_sg_vn_probDevices {0}" -f $my_sg_vn_probDevices.Length)
-    Write-ToLogFile -LogContent ("{0}" -f $my_sg_vn_probDevices)
 
     $cn_hk_Report = "Hongkong & Mainland China - Total: {0} ({1}/{2}), AD: {3}/{4}, CB: {5}/{6}, CBC: {7}/{8}, Patch: {9}/{10}" -f `
     (Get-ObjNumber $cn_hk_probDevices), `
